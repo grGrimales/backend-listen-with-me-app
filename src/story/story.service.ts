@@ -676,7 +676,7 @@ export class StoryService {
       // Si la orden es 'aleatorias', agregamos la etapa $sample al pipeline
       if (orden === 'aleatorias') {
         pipeline.push({
-          $sample: { size: 10 },
+          $sample: { size: +total },
         });
       }
 
@@ -732,7 +732,7 @@ export class StoryService {
 
       // Limitar el número de resultados
       pipeline.push({
-        $limit: total,
+        $limit: +total,
       });
 
 
