@@ -13,6 +13,7 @@ import { Stat } from '../stats/entities/stat.entity';
 import { v2 as cloudinary } from 'cloudinary';
 import { FileService } from '../file/file.service';
 import { CategoryService, categorys } from '../category/category.service';
+import { Console } from 'console';
 
 interface IQuerys {
   orden: string;
@@ -92,12 +93,13 @@ export class StoryService {
         }
       });
 
-
       const [resultsImg, resultsAudio] = await Promise.all([Promise.all(uploadImgPromises), Promise.all(uploadAudioPromises)]);
 
       resultsImg.forEach((result, index) => {
         if (result instanceof BadRequestException) {
-          throw new BadRequestException("Error al subir la imagen"); // !TODO: regresar una imagen por defecto
+          //throw new BadRequestException("Error al subir la imagen"); // !TODO: regresar una imagen por defecto
+          createStoryDto.paragraph[index].img = 'https://res.cloudinary.com/dcxto1nnl/video/upload/v1627698089/samples/elephants.mp4'
+          return;
         }
 
         if (createStoryDto.paragraph[index].img) {
@@ -105,7 +107,6 @@ export class StoryService {
         }
       }
       );
-
       resultsAudio.forEach((result, index) => {
         if (result instanceof BadRequestException) {
           throw new BadRequestException("Error al subir el audio"); // !TODO: regresar una imagen por defecto

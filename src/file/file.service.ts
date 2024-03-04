@@ -106,7 +106,7 @@ export class FileService {
 
   async deleteAllTemporalFiles() {
     try {
-      const result = await cloudinary.api.delete_resources_by_prefix('test');
+      const result = await cloudinary.api.delete_resources_by_prefix('permanent');
 
       return result;
     } catch (error) {
@@ -128,7 +128,7 @@ export class FileService {
     const currentYear = new Date().getFullYear();
     const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
     const currentDay = new Date().getDate();
-    const folder = `test/${version}/${currentYear}/${currentMonth}/${currentDay}/${titleStory}/${typeFile}`;
+    const folder = `permanent/${version}/${currentYear}/${currentMonth}/${currentDay}/${titleStory}/${typeFile}`;
 
 
     try {
