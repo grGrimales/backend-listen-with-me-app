@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { v4 as uuidv4 } from 'uuid';
 
 import { BadRequestException, Injectable } from '@nestjs/common';
@@ -7,13 +8,11 @@ import { storyDummy } from './data-dummy';
 import { InjectModel } from '@nestjs/mongoose';
 import { Story } from './entities/story.entity';
 import mongoose, { Model } from 'mongoose';
-import { User } from '../user/entities/user.entity';
 import { handleError } from '../helpers/handled-error';
 import { Stat } from '../stats/entities/stat.entity';
 import { v2 as cloudinary } from 'cloudinary';
 import { FileService } from '../file/file.service';
 import { CategoryService, categorys } from '../category/category.service';
-import { Console } from 'console';
 
 interface IQuerys {
   orden: string;
@@ -26,8 +25,6 @@ interface IQuerys {
 
 @Injectable()
 export class StoryService {
-
-
 
   private validOrden = ['recientes', 'antiguas', 'mas-reproducidas', 'menos-reproducidas', 'aleatorias'];
 
@@ -241,8 +238,6 @@ export class StoryService {
 
   }
 
-
-
   async findAll(userId: string) {
 
     try {
@@ -453,13 +448,6 @@ export class StoryService {
     }
   }
 
-
-
-
-
-
-
-
   async remove(id: string) {
     try {
 
@@ -490,7 +478,7 @@ export class StoryService {
       await this.storyModel.deleteMany({}).exec();
 
       // insertar datos dummy
-      // await this.storyModel.insertMany(storyDummy);
+      await this.storyModel.insertMany(storyDummy);
 
       await this.statsModel.deleteMany({}).exec();
 
@@ -624,7 +612,7 @@ export class StoryService {
   async findAllByUser(userId: string, querys: IQuerys) {
     try {
 
-      const { orden, category, favoritos , total} = querys;
+      const { orden, category, favoritos, total } = querys;
 
       this.validateOrden(orden);
 
@@ -655,17 +643,17 @@ export class StoryService {
 
       //Filtrar por categoria
 
-      if(category !== 'Todas') {
+      if (category !== 'Todas') {
         pipeline.push({
           $match: {
             'story.categories': category
           }
         });
-  
+
       }
 
       // filtrar por favoritos
-      if(favoritos === 'true') {
+      if (favoritos === 'true') {
         pipeline.push({
           $match: {
             isFavorite: true
@@ -691,7 +679,7 @@ export class StoryService {
         });
       }
 
-      if(orden === 'antiguas') {
+      if (orden === 'antiguas') {
         pipeline.push({
           $sort: {
             listenDate: 1,
@@ -699,7 +687,7 @@ export class StoryService {
         });
       }
 
-      if(orden === 'mas-reproducidas') {
+      if (orden === 'mas-reproducidas') {
         pipeline.push({
           $sort: {
             reproductions: -1,
@@ -707,7 +695,7 @@ export class StoryService {
         });
       }
 
-      if(orden === 'menos-reproducidas') {
+      if (orden === 'menos-reproducidas') {
         pipeline.push({
           $sort: {
             reproductions: 1,
@@ -715,7 +703,7 @@ export class StoryService {
         });
       }
 
-      if(orden === 'mas-reproducidas-completas') {
+      if (orden === 'mas-reproducidas-completas') {
         pipeline.push({
           $sort: {
             reproductionsCompletes: -1,
@@ -723,7 +711,7 @@ export class StoryService {
         });
       }
 
-      if(orden === 'menos-reproducidas-completas') {
+      if (orden === 'menos-reproducidas-completas') {
         pipeline.push({
           $sort: {
             reproductionsCompletes: 1,
@@ -808,13 +796,13 @@ export class StoryService {
 
   validateCategory(category: string) {
 
-    if(!category) {
-      throw new BadRequestException('category is required'); 
+    if (!category) {
+      throw new BadRequestException('category is required');
     }
 
 
     const currentValidCategorys = categorys.map(category => category.name);
-    if (!currentValidCategorys.includes(category) ){
+    if (!currentValidCategorys.includes(category)) {
       throw new BadRequestException(`category ${category} not valid (${currentValidCategorys.join(', ')})`);
     }
   }
@@ -825,11 +813,11 @@ export class StoryService {
       throw new BadRequestException('total is required');
     }
 
-    if ( isNaN(total)) {
+    if (isNaN(total)) {
       throw new BadRequestException('total must be a number');
     }
 
-   
+
 
     if (total < 1) {
       throw new BadRequestException('total must be greater than 0');

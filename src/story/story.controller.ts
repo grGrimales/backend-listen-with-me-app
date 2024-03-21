@@ -1,12 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, UseInterceptors, UploadedFile } from '@nestjs/common';
+/* eslint-disable prettier/prettier */
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { StoryService } from './story.service';
 import { CreateStoryDto } from './dto/create-story.dto';
 import { UpdateStoryDto } from './dto/update-story.dto';
 import { JwtValidateGuard } from '../guard/jwt-validate/jwt-validate.guard';
 import { AdminValidateGuard } from '../guard/admin-validate/admin-validate.guard';
 import { ValidateMongoIdGuard } from '../guard/validate-mondo-id/validate-mondo-id.guard';
-import { request } from 'http';
-import { FileInterceptor } from '@nestjs/platform-express';
+
 
 
 @Controller('story')
@@ -26,7 +26,7 @@ export class StoryController {
 
   @UseGuards(
     JwtValidateGuard,
-    AdminValidateGuard
+   // AdminValidateGuard
   )
   @Post("restart")
   createDataDummy() {

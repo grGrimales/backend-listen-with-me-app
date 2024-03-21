@@ -75,18 +75,21 @@ export class UserService {
       roles: user.roles,
       token
     };
+  
   }
 
-  async validateToken(request : Request ): Promise<any> {
+
+
+  async validateToken(request: Request): Promise<any> {
     try {
-      const user  = request['user'] as User;
+      const user = request['user'] as User;
       const newToken = jwt.sign({ userId: user.id, email: user.email }, process.env.MY_SECRECT_KEY, { expiresIn: process.env.TOKEN_DURATION || '48h' });
-      return { 
-        userId: user.id, 
-        email: user.email, 
+      return {
+        userId: user.id,
+        email: user.email,
         fullName: user.fullName,
         roles: user.roles,
-        token: newToken 
+        token: newToken
       };
 
     } catch (error) {
@@ -94,7 +97,7 @@ export class UserService {
       return this.handleError(error);
     }
   }
-  
+
 
 
 
@@ -130,11 +133,11 @@ export class UserService {
     if (error.code === 11000) {
       throw new BadRequestException('Email already exists');
     } else if (error.name === 'JsonWebTokenError') {
-    
+
       throw new UnauthorizedException('No estás autorizado para realizar esta acción');
-    
-    }    
-    
+
+    }
+
     else if (error.name === 'ValidationError') {
       throw new BadRequestException('Invalid data');
     } else if (error instanceof UnauthorizedException) {

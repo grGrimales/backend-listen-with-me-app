@@ -6,7 +6,7 @@ import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class ValidateMongoIdGuard implements CanActivate {
-  constructor(@InjectModel('Story') private storyModel: Model<Story>) { }
+  constructor() { }
 
 
   async canActivate(
