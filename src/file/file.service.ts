@@ -1,18 +1,19 @@
+/* eslint-disable prettier/prettier */
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateFileDto } from './dto/create-file.dto';
 import { UpdateFileDto } from './dto/update-file.dto';
 // Require the cloudinary library
 import { handleError } from '../helpers/handled-error';
-import { UploadApiErrorResponse, UploadApiResponse, v2 as cloudinary } from 'cloudinary';
+import { UploadApiResponse, v2 as cloudinary } from 'cloudinary';
 import toStream = require('buffer-to-stream');
-import { resolve } from 'path';
+
 
 @Injectable()
 export class FileService {
 
 
   audioExtensions = ['mp3'];
-  imageExtensions = ['png', 'jpg', 'jpeg'];
+  imageExtensions = ['png', 'jpg', 'jpeg', 'webp'];
 
   constructor() {
 

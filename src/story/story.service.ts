@@ -397,7 +397,7 @@ export class StoryService {
       }
 
 
-      let fileToDelete = [];
+      const fileToDelete = [];
 
       // Actualizar imagen si viene
 
@@ -559,7 +559,7 @@ export class StoryService {
       const stats = await this.statsModel.findOne({ story: storyId, user: userId }).exec();
       if (!stats) {
 
-        let reproductionsIncrements = {
+        const reproductionsIncrements = {
           reproductions: 0,
           reproductionsCompletes: 0,
           isOwner: true,
