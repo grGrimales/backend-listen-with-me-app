@@ -51,7 +51,6 @@ export class StoryController {
   )
   @Get('story-by-id/:id')
   findOne(@Param('id') id: string, @Req() request) {
-    console.log('findOne')
     const userId = request.user.id;
     return this.storyService.findOne(id, userId);
   }

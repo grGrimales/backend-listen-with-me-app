@@ -42,7 +42,11 @@ export class WordService {
 
       // Si la palabra ya existe, no se puede crear
       if (wordExist) {
-        throw new BadRequestException(`la palabra ya existe: ${createWordDto.word}!`);
+        
+        this.wordStatsService.addOwner(wordExist._id, userId);
+        
+        return wordExist;
+        //throw new BadRequestException(`la palabra ya existe: ${createWordDto.word}!`);
       }
 
       const createdWord = new this.wordModel({
@@ -56,8 +60,6 @@ export class WordService {
       await this.wordStatsService.addOwner(createdWord._id, userId);
 
       return createdWord;
-
-
 
     } catch (error) {
       handleError(error);
