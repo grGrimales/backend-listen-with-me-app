@@ -43,8 +43,6 @@ export class StoryController {
   }
 
 
-
-
   @UseGuards(
     ValidateMongoIdGuard,
     JwtValidateGuard,

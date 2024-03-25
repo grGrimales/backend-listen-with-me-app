@@ -1,12 +1,12 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { WordService } from './word.service';
 import { CreateWordDto } from './dto/create-word.dto';
 import { UpdateWordDto } from './dto/update-word.dto';
-
+import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtValidateGuard } from '../guard/jwt-validate/jwt-validate.guard';
 import { ValidateMongoIdGuard } from '../guard/validate-mondo-id/validate-mondo-id.guard';
-import { AdminValidateGuard } from '../guard/admin-validate/admin-validate.guard';
+
 
 
 @Controller('word')
@@ -21,6 +21,20 @@ export class WordController {
   create(@Body() createWordDto: CreateWordDto, @Req() request) {
     const userId = request.user.id;
     return this.wordService.create(createWordDto, userId );
+  }
+
+  @UseGuards(
+    ValidateMongoIdGuard,
+    JwtValidateGuard
+  )
+  @Patch('audio/:id')
+  @UseInterceptors(FileInterceptor('file'))
+  updateAudio(
+    @Param('id') wordId: string, @UploadedFile() file: Express.Multer.File,
+  ) {
+
+
+    return this.wordService.updateAudio(wordId,file );
   }
 
   @Get()
