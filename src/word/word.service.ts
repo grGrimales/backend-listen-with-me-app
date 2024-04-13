@@ -4,11 +4,11 @@ import { CreateWordDto } from './dto/create-word.dto';
 import { UpdateWordDto } from './dto/update-word.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Word } from './entities/word.entity';
-import { Model } from 'mongoose';
 import { handleError } from '../helpers/handled-error';
 import { WordStatsService } from 'src/word-stats/word-stats.service';
 import { CloudinaryAdapter } from 'src/plugins/cloudinary.adapter';
 import { UploadApiResponse, v2 as cloudinary } from 'cloudinary';
+import mongoose, { Model } from 'mongoose';
 
 interface IQuerys {
   orden: string;
@@ -209,7 +209,7 @@ export class WordService {
       // Is owner en true entonces solo filtra por las palabras creadas por ese usuario.
 
       if (isOwner == 'true') {
-        pipeline.push({ $match: { user: userId } });
+        pipeline.push({ $match: { user: new mongoose.Types.ObjectId(userId),} });
       }
 
 
