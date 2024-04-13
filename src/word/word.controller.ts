@@ -11,16 +11,16 @@ import { ValidateMongoIdGuard } from '../guard/validate-mondo-id/validate-mondo-
 
 @Controller('word')
 export class WordController {
-  constructor(private readonly wordService: WordService) {}
+  constructor(private readonly wordService: WordService) { }
 
-  
+
   @UseGuards(
     JwtValidateGuard,
   )
   @Post()
   create(@Body() createWordDto: CreateWordDto, @Req() request) {
     const userId = request.user.id;
-    return this.wordService.create(createWordDto, userId );
+    return this.wordService.create(createWordDto, userId);
   }
 
   @UseGuards(
@@ -34,12 +34,19 @@ export class WordController {
   ) {
 
 
-    return this.wordService.updateAudio(wordId,file );
+    return this.wordService.updateAudio(wordId, file);
   }
 
+  @UseGuards(
+    JwtValidateGuard
+  )
   @Get()
-  findAll() {
-    return this.wordService.findAll();
+  findAll(
+    @Req() request
+  ) {
+
+    const userId = request.user.id;
+    return this.wordService.findAll(request.query, userId);
   }
 
   @UseGuards(
@@ -60,7 +67,7 @@ export class WordController {
   @UseGuards(
     ValidateMongoIdGuard,
     JwtValidateGuard,
-   // AdminValidateGuard !TODO: habilitar cuando se tenga el rol de admin
+    // AdminValidateGuard !TODO: habilitar cuando se tenga el rol de admin
   )
   @Delete(':id')
   remove(@Param('id') id: string) {

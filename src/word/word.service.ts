@@ -10,6 +10,16 @@ import { WordStatsService } from 'src/word-stats/word-stats.service';
 import { CloudinaryAdapter } from 'src/plugins/cloudinary.adapter';
 import { UploadApiResponse, v2 as cloudinary } from 'cloudinary';
 
+interface IQuerys {
+  orden: string;
+  category?: string,
+  search?: string,
+  favoritos?: string,
+  total?: number,
+  isAudioPending?: string,
+  isOwner?: string
+}
+
 
 @Injectable()
 export class WordService {
@@ -90,7 +100,7 @@ export class WordService {
       }
 
       const firstLetter = wordDb.word.charAt(0).toUpperCase();
-      const pathToSave =  `words/${firstLetter}/${wordDb.word}`;
+      const pathToSave = `words/${firstLetter}/${wordDb.word}`;
       const oldAudioPath = wordDb.audio;
 
 
@@ -100,8 +110,8 @@ export class WordService {
       await wordDb.save();
 
       if (oldAudioPath !== 'pendiente') {
-       await this.cloudinaryAdapter.deleteFile(oldAudioPath, cloudinary, pathToSave);
-     
+        await this.cloudinaryAdapter.deleteFile(oldAudioPath, cloudinary, pathToSave);
+
       }
 
       return wordDb;
@@ -115,11 +125,70 @@ export class WordService {
   }
 
 
-  async findAll() {
+  async findAll(
+    querys: IQuerys,
+    userId: string
+  ) {
 
 
     try {
-      const words = await this.wordModel.find().exec();
+
+      console.log('querys', querys);
+
+      const {
+        orden,
+        category,
+        favoritos,
+        total = 10,
+        isAudioPending, isOwner } = querys;
+
+console.log(querys)
+
+      const validOrden = ['recientes', 'antiguas', 'aleatorias'];
+
+
+      if (!validOrden.includes(orden)) {
+        throw new BadRequestException(`Params orden is not valid:  (${validOrden.join(', ')})`);
+      }
+
+      if (isAudioPending !== 'true' && isAudioPending !== 'false') {
+        throw new BadRequestException(`Params isAudioPending is not valid:  (true, false)`);
+      }
+
+      if (isOwner !== 'true' && isOwner !== 'false') {
+        throw new BadRequestException(`Params isOwner is not valid:  (true, false)`);
+      }
+
+
+
+      const pipeline: any[] = [{ $match: {} }];
+
+      if (isAudioPending == 'true') {
+        console.log('isAudioPending', isAudioPending);
+        pipeline.push({ $match: { audio: 'pendiente' } });
+      } else if (isAudioPending === 'false') {
+        pipeline.push({ $match: { audio: { $ne: 'pendiente' } } });
+      }
+
+
+      // Is owner en true entonces solo filtra por las palabras creadas por ese usuario.
+
+      if (isOwner == 'true') {
+        pipeline.push({ $match: { user: userId } });
+      }
+
+
+      if (orden === 'recientes') {
+        pipeline.push({ $sort: { createdAt: -1 } });
+      } else if (orden === 'antiguas') {
+        pipeline.push({ $sort: { createdAt: 1 } });
+      } else if (orden === 'aleatorias') {
+        pipeline.push({ $sample: { size: total } });
+      }
+
+
+      // const words = await this.wordModel.find().exec();
+      const words = await this.wordModel.aggregate(pipeline).exec();
       return words;
 
     } catch (error) {
