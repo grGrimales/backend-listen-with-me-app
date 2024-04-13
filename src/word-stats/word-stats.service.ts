@@ -16,7 +16,8 @@ interface IQuerys {
   category?: string,
   search?: string,
   favoritos?: string,
-  total?: number
+  total?: number,
+  isAudioPending?: string,
 }
 
 
@@ -95,7 +96,21 @@ export class WordStatsService {
   ) {
     try {
 
-      const { orden, category, favoritos, total = 10 } = querys;
+      const { orden, category, favoritos,isAudioPending, total = 10 } = querys;
+
+
+      // Valiadar que isAudioPending venga
+      if (isAudioPending === undefined) {
+        throw new BadRequestException('isAudioPending is required');
+      }
+
+      // Validar sea boolean
+      console.log('isAudioPending', isAudioPending);
+      console.log('isAudioPending', typeof isAudioPending);
+
+      if (isAudioPending && (isAudioPending !== 'true' && isAudioPending !== 'false' )) {
+        throw new BadRequestException('isAudioPending must be a boolean');
+      }
 
       this.validateOrden(orden);
       this.validateTotal(total);
@@ -190,6 +205,16 @@ export class WordStatsService {
           },
         });
       }
+
+      if(isAudioPending == "false"){
+        pipeline.push({
+          $match: {
+            'word.audio': { $ne: 'pendiente' }
+          }
+        });
+      }
+
+
       // Limitar el número de resultados
       pipeline.push({
         $limit: +total,

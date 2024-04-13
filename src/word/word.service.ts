@@ -175,10 +175,6 @@ export class WordService {
       querys.page = +page;
       querys.limit = +limit;
 
-
-
-
-
       const validOrden = ['recientes', 'antiguas', 'aleatorias'];
 
 
