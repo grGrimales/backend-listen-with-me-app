@@ -17,7 +17,10 @@ interface IQuerys {
   favoritos?: string,
   total?: number,
   isAudioPending?: string,
-  isOwner?: string
+  isOwner?: string,
+  page?: number,
+  limit?: number
+
 }
 
 
@@ -140,9 +143,41 @@ export class WordService {
         category,
         favoritos,
         total = 10,
-        isAudioPending, isOwner } = querys;
+        isAudioPending, isOwner,
+        page ,
+        limit
+      
+      } = querys;
 
-console.log(querys)
+
+      // Validar que page y limit sean enviado
+      if (!page || !limit) {
+        throw new BadRequestException(`Params page and limit are required!`);
+      }
+
+      // Validar que page y limit sean numeros
+      if (isNaN(page) || isNaN(limit)) {
+        throw new BadRequestException(`Params page and limit must be numbers!`);
+      }
+
+    // validar que page y limit sean mayores a 0
+      if (page <= 0 || limit <= 0) {
+        throw new BadRequestException(`Params page and limit must be greater than 0!`);
+      }
+
+      // validar que total sea mayor a 0
+      if (total <= 0) {
+        throw new BadRequestException(`Params total must be greater than 0!`);
+      }
+
+
+      // castear page y limit a numeros
+      querys.page = +page;
+      querys.limit = +limit;
+
+
+
+
 
       const validOrden = ['recientes', 'antiguas', 'aleatorias'];
 
@@ -187,9 +222,22 @@ console.log(querys)
       }
 
 
+      // Agregar una paginación con el total de palabras a mostrar por página  y desde que página se va a mostrar
+      pipeline.push({ $skip: (page - 1) * limit });
+
       // const words = await this.wordModel.find().exec();
       const words = await this.wordModel.aggregate(pipeline).exec();
-      return words;
+      return {
+        total: words.length,
+        page,
+        limit,
+        words,
+      
+
+
+
+      
+      };
 
     } catch (error) {
       handleError(error);
