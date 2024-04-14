@@ -53,6 +53,16 @@ export class StoryController {
     return this.storyService.findOne(id, userId);
   }
 
+  @UseGuards(
+    ValidateMongoIdGuard,
+    JwtValidateGuard,
+  )
+  @Get('story-by-id-with-word-information/:id')
+  findOneWithWordInformation(@Param('id') id: string, @Req() request) {
+    const userId = request.user.id;
+    return this.storyService.findOneWithWordInformation(id, userId);
+  }
+
 
   @UseGuards(
     JwtValidateGuard,

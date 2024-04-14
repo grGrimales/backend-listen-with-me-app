@@ -31,6 +31,7 @@ export class StoryService {
   constructor(
     @InjectModel('Story') private readonly storyModel: Model<Story>,
     @InjectModel('Stats') private statsModel: Model<Stat>,
+    @InjectModel('WordStat') private wordStatModel: Model<any>,
 
     private readonly fileService: FileService,
     private readonly categoryService: CategoryService,
@@ -314,6 +315,72 @@ export class StoryService {
     }
 
 
+
+  }
+
+
+
+  async findOneWithWordInformation(storyId: string, userId: string) {
+
+    try {
+
+      const [storyDoc, wordsDoc] = await Promise.all([
+        this.storyModel.findById(storyId),
+        this.wordStatModel.find({ user: userId }).populate('word').exec()
+
+      ]);
+      // Convertir el documento de Mongoose a un objeto JavaScript plano
+      const story = storyDoc.toObject() as any;
+      const words = wordsDoc
+        .map((word) => word.toObject());
+
+      // Convertir el texto de cada párrafo en un array de palabras
+      const textAsArray = story.paragraph.map((element: any) => element.text.split(' '));
+      for (let index = 0; index < story.paragraph.length; index++) {
+        (story.paragraph[index] as any).text = textAsArray[index];
+      }
+      const newWords = words.map((element: any) => {
+
+
+        if (element.word) {
+
+          return {
+            word: element.word.word,
+            translations: element.word.translation,
+            audio: element.word.audio,
+            reproductions: element.reproductions,
+            reproductionsCompletes: element.reproductionsCompletes,
+            isFavorite: element.isFavorite,
+            listenDate: element.listenDate,
+          }
+
+        }
+
+      }).filter((element: any) => element !== undefined)
+
+      story.paragraph.forEach((parrafo, indexParrafo) => {
+
+        (parrafo.text).forEach((word, indexWord) => {
+
+          const cleanWord = word.replace(/[.,'"\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+          const wordFound = newWords.find((element: any) => element.word == cleanWord);
+
+          if (wordFound) {
+            (story.paragraph[indexParrafo] as any).text[indexWord] = wordFound;
+          }
+        }
+        );
+
+      })
+
+      return {
+        story
+      }
+
+
+    } catch (error) {
+      handleError(error);
+    }
 
   }
 

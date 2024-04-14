@@ -8,6 +8,7 @@ import { UserSchema } from '../user/entities/user.entity';
 import { StatSchema } from '../stats/entities/stat.entity';
 import { FileService } from '../file/file.service';
 import { CategoryService } from '../category/category.service';
+import { WordStatSchema } from '../word-stats/entities/word-stat.entity';
 
 @Module({
   controllers: [StoryController],
@@ -15,6 +16,7 @@ import { CategoryService } from '../category/category.service';
     MongooseModule.forFeature([{ name: 'Story', schema: StorySchema}]),
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema}]),
     MongooseModule.forFeature([{ name: 'Stats', schema: StatSchema}]),
+    MongooseModule.forFeature([{ name: 'WordStat', schema: WordStatSchema}]),
 
   
   ],

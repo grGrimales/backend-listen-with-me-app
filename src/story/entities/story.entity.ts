@@ -1,3 +1,5 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/ban-types */
 import mongoose, { Schema, Document } from 'mongoose';
 import { User } from '../../user/entities/user.entity';
 
@@ -32,9 +34,9 @@ export const StorySchema: Schema = new Schema({
     paragraph: { type: [ParagraphSchema], required: true }, // Usando ParagraphSchema
 },
 
-{
-    versionKey: false,
-}
+    {
+        versionKey: false,
+    }
 );
 
 StorySchema.set('toJSON', {
