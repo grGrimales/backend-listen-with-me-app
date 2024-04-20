@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
@@ -12,6 +13,7 @@ import { CategoryService } from './category/category.service';
 import { CategoryModule } from './category/category.module';
 import { WordModule } from './word/word.module';
 import { WordStatsModule } from './word-stats/word-stats.module';
+import { PlaylistModule } from './playlist/playlist.module';
 
 require('dotenv').config()
 
@@ -29,6 +31,7 @@ require('dotenv').config()
     CategoryModule,
     WordModule,
     WordStatsModule,
+    PlaylistModule,
   ],
   controllers: [AppController],
   providers: [AppService, CategoryService],

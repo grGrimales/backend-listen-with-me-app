@@ -5,8 +5,8 @@ import { UpdateWordDto } from './dto/update-word.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Word } from './entities/word.entity';
 import { handleError } from '../helpers/handled-error';
-import { WordStatsService } from 'src/word-stats/word-stats.service';
-import { CloudinaryAdapter } from 'src/plugins/cloudinary.adapter';
+import { WordStatsService } from '../word-stats/word-stats.service';
+import { CloudinaryAdapter } from '../plugins/cloudinary.adapter';
 import { UploadApiResponse, v2 as cloudinary } from 'cloudinary';
 import mongoose, { Model } from 'mongoose';
 

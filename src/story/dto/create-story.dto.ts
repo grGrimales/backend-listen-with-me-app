@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Type } from "class-transformer";
 import { ArrayMinSize, IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString, MinLength, ValidateNested } from "class-validator";
 import { ParagraphSchema } from "../entities/story.entity";
