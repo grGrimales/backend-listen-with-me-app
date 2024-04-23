@@ -14,6 +14,7 @@ import { CategoryModule } from './category/category.module';
 import { WordModule } from './word/word.module';
 import { WordStatsModule } from './word-stats/word-stats.module';
 import { PlaylistModule } from './playlist/playlist.module';
+import { PhraseModule } from './phrase/phrase.module';
 
 require('dotenv').config()
 
@@ -32,6 +33,7 @@ require('dotenv').config()
     WordModule,
     WordStatsModule,
     PlaylistModule,
+    PhraseModule,
   ],
   controllers: [AppController],
   providers: [AppService, CategoryService],

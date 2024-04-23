@@ -7,7 +7,7 @@ import { Word } from './entities/word.entity';
 import { handleError } from '../helpers/handled-error';
 import { WordStatsService } from '../word-stats/word-stats.service';
 import { CloudinaryAdapter } from '../plugins/cloudinary.adapter';
-import { UploadApiResponse, v2 as cloudinary } from 'cloudinary';
+import {  v2 as cloudinary } from 'cloudinary';
 import mongoose, { Model } from 'mongoose';
 
 interface IQuerys {
@@ -136,7 +136,6 @@ export class WordService {
 
     try {
 
-      console.log('querys', querys);
 
       const {
         orden,

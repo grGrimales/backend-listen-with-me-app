@@ -27,10 +27,10 @@ export class PlaylistService {
     try {
 
 
-      const playlistExist = await this.playListModel.findOne({ title: createPlaylistDto.title, user: userId});
+      const playlistExist = await this.playListModel.findOne({ title: createPlaylistDto.title, user: userId });
 
       console.log('playlistExist', playlistExist);
-      
+
       if (playlistExist) {
         throw new BadRequestException('Playlist already exists');
       }
@@ -39,7 +39,7 @@ export class PlaylistService {
         ...createPlaylistDto,
         user: userId,
         viewerUsers: [
-...createPlaylistDto.viewerUsers,
+          ...createPlaylistDto.viewerUsers,
           userId
         ],
 
@@ -72,20 +72,20 @@ export class PlaylistService {
 
 
       const playlists = await this.playListModel.find({ user: userId })
-      .populate('editorUsers', 'fullName email id')
-      .populate('viewerUsers' , 'fullName email id')
-      .populate('stories')
-      .populate('words');
+        .populate('editorUsers', 'fullName email id')
+        .populate('viewerUsers', 'fullName email id')
+        .populate('stories')
+        .populate('words');
 
 
-      if(!playlists) {
+      if (!playlists) {
         throw new BadRequestException('No playlists found');
       }
 
       return playlists;
-      
+
     } catch (error) {
-      handleError(error);  
+      handleError(error);
     }
 
 
@@ -104,14 +104,14 @@ export class PlaylistService {
 
     try {
 
-      const {  playlistId, elementId } = addElementToPlaylistDto;
+      const { playlistId, elementId } = addElementToPlaylistDto;
 
-     
+
 
       const playListFromDb = await this.playListModel.findOne({ _id: playlistId });
 
 
-      if(!playListFromDb) {
+      if (!playListFromDb) {
         throw new BadRequestException('Playlist not found');
 
 
@@ -124,12 +124,12 @@ export class PlaylistService {
       console.log(playListFromDb);
       console.log(playListFromDb.user.toString());
       console.log(userId.toString());
-    
 
-      if(playListFromDb.user.toString() !== userId.toString() && !playListFromDb.editorUsers.map(user=> user.toString()).includes(userId.toString()) )  {
+
+      if (playListFromDb.user.toString() !== userId.toString() && !playListFromDb.editorUsers.map(user => user.toString()).includes(userId.toString())) {
         throw new BadRequestException('You are not allowed to add elements to this playlist');
       }
- 
+
 
       const playListType = playListFromDb.type;
 
@@ -144,7 +144,7 @@ export class PlaylistService {
 
 
         // Si la historia ya esta en la lista no la agregamos
-        if(playListFromDb.stories.map(story => story.toString()).includes(elementId)) {
+        if (playListFromDb.stories.map(story => story.toString()).includes(elementId)) {
           throw new BadRequestException('Story already exists in the playlist');
         }
 
@@ -155,7 +155,7 @@ export class PlaylistService {
 
 
         // Si la palabra ya esta en la lista no la agregamos
-        if(playListFromDb.words.map(word => word.toString()).includes(elementId)) {
+        if (playListFromDb.words.map(word => word.toString()).includes(elementId)) {
           throw new BadRequestException('Word already exists in the playlist');
         }
 
@@ -165,11 +165,11 @@ export class PlaylistService {
 
         playListFromDb.words.push(word._id);
         await playListFromDb.save();
-        
+
       }
 
       return playListFromDb;
-      
+
     } catch (error) {
       handleError(error);
     }
@@ -186,20 +186,21 @@ export class PlaylistService {
 
 
     try {
-      
-      const playlist =  await this.playListModel.findOne({   _id: playlistId,
+
+      const playlist = await this.playListModel.findOne({
+        _id: playlistId,
         $or: [
-          { user: userId }, 
-          { editorUsers: userId }, 
+          { user: userId },
+          { editorUsers: userId },
           { viewerUsers: userId }
         ]
       })
-      .populate('editorUsers', 'fullName email id')
-      .populate('viewerUsers' , 'fullName email id')
-      .populate('stories')
-      .populate('words');
+        .populate('editorUsers', 'fullName email id')
+        .populate('viewerUsers', 'fullName email id')
+        .populate('stories')
+        .populate('words');
 
-      if(!playlist) {
+      if (!playlist) {
         throw new BadRequestException('Playlist not found');
       }
 

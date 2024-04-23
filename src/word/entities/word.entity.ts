@@ -1,3 +1,5 @@
+/* eslint-disable prettier/prettier */
+
 import mongoose, { Schema, Document } from 'mongoose';
 import { User } from '../../user/entities/user.entity';
 

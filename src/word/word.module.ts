@@ -7,7 +7,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { WordSchema } from './entities/word.entity';
 import { WordStatSchema } from '../word-stats/entities/word-stat.entity';
 import { WordStatsService } from '../word-stats/word-stats.service';
-import { CloudinaryAdapter } from '../plugins/cloudinary.adapter'
+import { CloudinaryAdapter } from '../plugins/cloudinary.adapter';
 
 
 @Module({

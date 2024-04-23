@@ -1,8 +1,6 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable prettier/prettier */
 import { BadRequestException, CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import{ Story } from '../../story/entities/story.entity';
-import { Model } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class ValidateMongoIdGuard implements CanActivate {
