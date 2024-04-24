@@ -7,8 +7,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Story } from '../story/entities/story.entity';
 import { PlayList } from './entities/playlist.entity';
-import e from 'express';
 import { AddElementToPlaylistDto } from './dto/add-element-to-playlist-dto';
+import { Phrase } from '../phrase/entities/phrase.entity';
+import { Word } from '../word/entities/word.entity';
 
 
 @Injectable()
@@ -17,6 +18,8 @@ export class PlaylistService {
   constructor(
     @InjectModel('Story') private readonly storyModel: Model<Story>,
     @InjectModel('PlayList') private readonly playListModel: Model<PlayList>,
+    @InjectModel('Phrase') private readonly phraseModel: Model<Phrase>,
+    @InjectModel('Word') private readonly wordModel: Model<Word>,
   ) { }
 
 
@@ -29,7 +32,6 @@ export class PlaylistService {
 
       const playlistExist = await this.playListModel.findOne({ title: createPlaylistDto.title, user: userId });
 
-      console.log('playlistExist', playlistExist);
 
       if (playlistExist) {
         throw new BadRequestException('Playlist already exists');
@@ -124,7 +126,7 @@ export class PlaylistService {
       const playListType = playListFromDb.type;
 
 
-
+      // Si el tipo de lista es historia
       if (playListType === 'Story') {
         const story = await this.storyModel.findOne({ _id: elementId });
 
@@ -140,7 +142,12 @@ export class PlaylistService {
 
         playListFromDb.stories.push(story._id);
         await playListFromDb.save();
-      } else if (playListType === 'Word') {
+      }
+
+
+
+      // Si el tipo de lista es palabra
+      if (playListType === 'Word') {
         const word = await this.storyModel.findOne({ _id: elementId });
 
 
@@ -158,6 +165,26 @@ export class PlaylistService {
 
       }
 
+
+
+      // Si el tipo de lista es frase
+      if (playListType === 'Phrase') {
+
+        const phrase = await this.phraseModel.findOne({ _id: elementId });
+
+        if (!phrase) {
+          throw new BadRequestException('Phrase not found');
+        }
+
+        // Si la frase ya esta en la lista no la agregamos
+        if (playListFromDb.phrases.map(phrase => phrase.toString()).includes(elementId)) {
+          throw new BadRequestException('Phrase already exists in the playlist');
+        }
+
+
+
+      }
+
       return playListFromDb;
 
     } catch (error) {
@@ -172,7 +199,7 @@ export class PlaylistService {
 
 
     try {
-      
+
       const { playlistId, elementId } = addElementToPlaylistDto;
 
       const playListFromDb = await this.playListModel.findOne({ _id: playlistId });
@@ -190,13 +217,13 @@ export class PlaylistService {
 
       const playListType = playListFromDb.type;
 
-      if(playListType === 'Story'){
+      if (playListType === 'Story') {
         playListFromDb.stories = playListFromDb.stories.filter(story => story.toString() !== elementId);
         await playListFromDb.save();
       }
 
 
-      if(playListType === 'Word'){
+      if (playListType === 'Word') {
         playListFromDb.words = playListFromDb.words.filter(word => word.toString() !== elementId);
         await playListFromDb.save();
       }
@@ -256,16 +283,16 @@ export class PlaylistService {
 
     try {
 
-      const playlist = await this.playListModel.findOne({ _id: playListId});
+      const playlist = await this.playListModel.findOne({ _id: playListId });
 
 
       // Verificamos si la lista existe
-      if(!playlist){
-        throw new BadRequestException( `Playlist with id ${playListId} not found`);
+      if (!playlist) {
+        throw new BadRequestException(`Playlist with id ${playListId} not found`);
       }
 
       // Verificamos si el usuario es el dueño de la lista
-      if(playlist.toJSON().user.toString() !== userId.toString()){
+      if (playlist.toJSON().user.toString() !== userId.toString()) {
         throw new BadRequestException('You are not allowed to delete this playlist');
       }
 
@@ -280,8 +307,8 @@ export class PlaylistService {
 
 
 
-      
-      
+
+
 
 
 

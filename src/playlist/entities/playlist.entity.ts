@@ -3,6 +3,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 import { User } from '../../user/entities/user.entity';
 import { Story } from '../../story/entities/story.entity';
 import { Word } from '../../word/entities/word.entity'
+import { Phrase } from 'src/phrase/entities/phrase.entity';
 
 export interface PlayList extends Document {
     title: string;
@@ -12,6 +13,8 @@ export interface PlayList extends Document {
     viewerUsers: User[];
     stories: Story[];
     words: Word[];
+    phrases: Phrase[];
+
 }
 
 
@@ -25,6 +28,7 @@ export const PlayListSchema : Schema = new Schema({
     viewerUsers: { type: [Schema.Types.ObjectId], ref: 'User', required: false },
     stories: { type: [Schema.Types.ObjectId], ref: 'Story', required: false },
     words: { type: [Schema.Types.ObjectId], ref: 'Word', required: false },
+    phrases: { type: [Schema.Types.ObjectId], ref: 'Phrase', required: false },
     // TODO: Pendiente agregar frases
 });
 

@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 
-import { ArrayMinSize, IsArray, IsBoolean, IsIn, IsMongoId, IsNotEmpty, IsOptional, IsString, MinLength, ValidateNested } from "class-validator";
+import {  IsArray,  IsIn, IsMongoId, IsNotEmpty,  IsString } from "class-validator";
 
 
 
@@ -15,39 +15,26 @@ export class CreatePlaylistDto {
 
     @IsString()
     @IsNotEmpty()
-    @IsIn(['Story', 'Word'])
+    @IsIn(['Story', 'Word', 'Phrase'])
     type: string;
 
-
-    //     editorUsers: { type: [Schema.Types.ObjectId], ref: 'User', required: false },
 
     @IsArray()
     @IsMongoId({ each: true })
     editorUsers: string[];
 
 
-
-    //    viewerUsers: { type: [Schema.Types.ObjectId], ref: 'User', required: false },
-    
     @IsArray()
     @IsMongoId({ each: true })
     viewerUsers: string[];
-
-    //    stories: { type: [Schema.Types.ObjectId], ref: 'Story', required: false },
-
 
     @IsArray()
     @IsMongoId({ each: true })
     stories: string[];
 
-
-    //    words: { type: [Schema.Types.ObjectId], ref: 'Word', required: false },
-
     @IsArray()
     @IsMongoId({ each: true })
     words: string[];
-
-
 
 
 }
