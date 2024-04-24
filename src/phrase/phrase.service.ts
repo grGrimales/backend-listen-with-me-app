@@ -242,7 +242,36 @@ export class PhraseService {
     return `This action updates a #${id} phrase`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} phrase`;
+  async remove(phraseId: string, userId: string) {
+
+    try {
+      
+
+      const phrase = await this.phraseModel.findOne({ _id: phraseId });
+
+      if (!phrase) {
+        throw new BadRequestException('Phrase not found');
+      }
+
+      // Validar que el usuario sea el dueño de la frase
+      if (phrase.toJSON().user.toString() !== userId) {
+        throw new BadRequestException('You are not the owner of this phrase');
+      }
+
+      await this.phraseModel.deleteOne({ _id: phraseId });
+
+      return {
+        message: 'Phrase deleted successfully',
+        data: phrase
+      };
+
+
+
+
+    } catch (error) {
+      handleError(error);
+    }
+
+
   }
 }

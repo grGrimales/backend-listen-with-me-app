@@ -82,8 +82,16 @@ export class PhraseController {
     return this.phraseService.update(+id, updatePhraseDto);
   }
 
+
+  @UseGuards(
+    ValidateMongoIdGuard,
+    JwtValidateGuard
+  )
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.phraseService.remove(+id);
+  remove(@Param('id') id: string, @Req() request){
+
+    const userId = request.user.id;
+
+    return this.phraseService.remove(id, userId);
   }
 }
