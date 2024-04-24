@@ -120,12 +120,6 @@ export class PlaylistService {
       }
 
 
-
-      console.log(playListFromDb);
-      console.log(playListFromDb.user.toString());
-      console.log(userId.toString());
-
-
       if (playListFromDb.user.toString() !== userId.toString() && !playListFromDb.editorUsers.map(user => user.toString()).includes(userId.toString())) {
         throw new BadRequestException('You are not allowed to add elements to this playlist');
       }
@@ -219,7 +213,42 @@ export class PlaylistService {
     return `This action updates a #${id} playlist`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} playlist`;
+  async remove(playListId: string, userId: string) {
+
+    try {
+
+      const playlist = await this.playListModel.findOne({ _id: playListId});
+
+
+      // Verificamos si la lista existe
+      if(!playlist){
+        throw new BadRequestException( `Playlist with id ${playListId} not found`);
+      }
+
+      // Verificamos si el usuario es el dueño de la lista
+      if(playlist.toJSON().user.toString() !== userId.toString()){
+        throw new BadRequestException('You are not allowed to delete this playlist');
+      }
+
+
+      await this.playListModel.deleteOne({ _id: playListId });
+
+
+
+      return {
+        message: 'Playlist deleted successfully'
+      };
+
+
+
+      
+      
+
+
+
+    } catch (error) {
+      handleError(error);
+    }
+
   }
 }

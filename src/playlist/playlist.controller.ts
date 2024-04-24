@@ -77,8 +77,15 @@ export class PlaylistController {
     return this.playlistService.update(+id, updatePlaylistDto);
   }
 
+  @UseGuards(
+    ValidateMongoIdGuard,
+    JwtValidateGuard,
+  )
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.playlistService.remove(+id);
+  remove(@Param('id') id: string, @Req() request) {
+
+    const userId = request.user.id;
+
+    return this.playlistService.remove(id, userId);
   }
 }
