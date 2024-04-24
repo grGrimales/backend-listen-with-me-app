@@ -44,6 +44,17 @@ export class PlaylistController {
   }
 
 
+  @UseGuards(
+    JwtValidateGuard,
+  )
+  @Put('remove-element-to-playlist')
+  removeElementToPlaylist(@Body() addElementToPlaylistDto: AddElementToPlaylistDto, @Req() request) {
+    const userId = request.user.id;
+
+    // playlistId: string, elementId: string, elementType: string, userId: string
+    return this.playlistService.removeElementFromPlaylist(addElementToPlaylistDto, userId);
+  }
+
 
   
   @UseGuards(

@@ -113,10 +113,6 @@ export class PlaylistService {
 
       if (!playListFromDb) {
         throw new BadRequestException('Playlist not found');
-
-
-
-
       }
 
 
@@ -171,6 +167,49 @@ export class PlaylistService {
 
   }
 
+
+  async removeElementFromPlaylist(addElementToPlaylistDto: AddElementToPlaylistDto, userId: string) {
+
+
+    try {
+      
+      const { playlistId, elementId } = addElementToPlaylistDto;
+
+      const playListFromDb = await this.playListModel.findOne({ _id: playlistId });
+
+
+      if (!playListFromDb) {
+        throw new BadRequestException('Playlist not found');
+      }
+
+
+      if (playListFromDb.user.toString() !== userId.toString() && !playListFromDb.editorUsers.map(user => user.toString()).includes(userId.toString())) {
+        throw new BadRequestException('You are not allowed to remove elements from this playlist');
+      }
+
+
+      const playListType = playListFromDb.type;
+
+      if(playListType === 'Story'){
+        playListFromDb.stories = playListFromDb.stories.filter(story => story.toString() !== elementId);
+        await playListFromDb.save();
+      }
+
+
+      if(playListType === 'Word'){
+        playListFromDb.words = playListFromDb.words.filter(word => word.toString() !== elementId);
+        await playListFromDb.save();
+      }
+
+
+      return playListFromDb;
+
+
+    } catch (error) {
+      handleError(error);
+    }
+
+  }
 
   findAll() {
     return `This action returns all playlist`;
