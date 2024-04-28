@@ -10,6 +10,7 @@ import { PlayList } from './entities/playlist.entity';
 import { AddElementToPlaylistDto } from './dto/add-element-to-playlist-dto';
 import { Phrase } from '../phrase/entities/phrase.entity';
 import { Word } from '../word/entities/word.entity';
+import { WordStat } from '../word-stats/entities/word-stat.entity';
 
 
 @Injectable()
@@ -20,6 +21,8 @@ export class PlaylistService {
     @InjectModel('PlayList') private readonly playListModel: Model<PlayList>,
     @InjectModel('Phrase') private readonly phraseModel: Model<Phrase>,
     @InjectModel('Word') private readonly wordModel: Model<Word>,
+    @InjectModel('WordStat') private wordStatModel: Model<WordStat>,
+
   ) { }
 
 
@@ -317,14 +320,14 @@ if(isOwner !== 'true' && isOwner !== 'false'){
 
   }
 
-  findAll() {
-    return `This action returns all playlist`;
-  }
+
 
   async findOne(playlistId: string, userId: string) {
 
 
     try {
+
+
 
       const playlist = await this.playListModel.findOne({
         _id: playlistId,
@@ -337,7 +340,8 @@ if(isOwner !== 'true' && isOwner !== 'false'){
         .populate('editorUsers', 'fullName email id')
         .populate('viewerUsers', 'fullName email id')
         .populate('stories')
-        .populate('words');
+        .populate('WordStat')
+
 
       if (!playlist) {
         throw new BadRequestException('Playlist not found');

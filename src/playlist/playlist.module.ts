@@ -12,6 +12,9 @@ import { PlayListSchema } from './entities/playlist.entity';
 import { PhraseSchema } from '../phrase/entities/phrase.entity';
 
 
+import { WordStatSchema } from '../word-stats/entities/word-stat.entity';
+
+
 @Module({
   controllers: [PlaylistController],
   providers: [PlaylistService],
@@ -21,6 +24,7 @@ import { PhraseSchema } from '../phrase/entities/phrase.entity';
     MongooseModule.forFeature([{ name: 'Word', schema: WordSchema}]),
     MongooseModule.forFeature([{ name: 'Phrase', schema: PhraseSchema}]),
     MongooseModule.forFeature([{ name: 'PlayList', schema: PlayListSchema  }]),
+    MongooseModule.forFeature([{ name: 'WordStat', schema: WordStatSchema}]),
 
 
   

@@ -36,6 +36,10 @@ export class CreatePlaylistDto {
     @IsMongoId({ each: true })
     words: string[];
 
+    @IsArray()
+    @IsMongoId({ each: true })
+    phrase: string[];
+
 
 }
 

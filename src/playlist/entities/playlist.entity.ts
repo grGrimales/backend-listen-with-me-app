@@ -4,6 +4,7 @@ import { User } from '../../user/entities/user.entity';
 import { Story } from '../../story/entities/story.entity';
 import { Word } from '../../word/entities/word.entity'
 import { Phrase } from '../../phrase/entities/phrase.entity';
+import { WordStat } from '../../word-stats/entities/word-stat.entity';
 
 export interface PlayList extends Document {
     title: string;
@@ -13,6 +14,7 @@ export interface PlayList extends Document {
     viewerUsers: User[];
     stories: Story[];
     words: Word[];
+    wordsStat: WordStat;
     phrases: Phrase[];
 
 }
@@ -29,6 +31,7 @@ export const PlayListSchema : Schema = new Schema({
     stories: { type: [Schema.Types.ObjectId], ref: 'Story', required: false },
     words: { type: [Schema.Types.ObjectId], ref: 'Word', required: false },
     phrases: { type: [Schema.Types.ObjectId], ref: 'Phrase', required: false },
+    wordsStat: { type: Schema.Types.ObjectId, ref: 'WordStat', required: false },
     // TODO: Pendiente agregar frases
 });
 
