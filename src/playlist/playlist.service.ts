@@ -11,10 +11,17 @@ import { AddElementToPlaylistDto } from './dto/add-element-to-playlist-dto';
 import { Phrase } from '../phrase/entities/phrase.entity';
 import { Word } from '../word/entities/word.entity';
 import { WordStat } from '../word-stats/entities/word-stat.entity';
+import { WordStatsService } from '../word-stats/word-stats.service';
+import { StoryService } from '../story/story.service';
+import { title } from 'process';
 
 
 @Injectable()
 export class PlaylistService {
+
+
+  private validOrden = ['aleatorias', 'menos-reproducidas', 'mas-reproducidas']; // TODO: agregar recientes y antiguas
+
 
   constructor(
     @InjectModel('Story') private readonly storyModel: Model<Story>,
@@ -22,6 +29,13 @@ export class PlaylistService {
     @InjectModel('Phrase') private readonly phraseModel: Model<Phrase>,
     @InjectModel('Word') private readonly wordModel: Model<Word>,
     @InjectModel('WordStat') private wordStatModel: Model<WordStat>,
+
+    // WordStatsService
+
+    private readonly wordStatsService: WordStatsService,
+    private readonly storyService: StoryService,
+
+
 
   ) { }
 
@@ -153,6 +167,10 @@ export class PlaylistService {
       const playListType = playListFromDb.type;
 
 
+      console.log(playListType);
+      console.log(playListFromDb)
+
+
       // Si el tipo de lista es historia
       if (playListType === 'Story') {
         const story = await this.storyModel.findOne({ _id: elementId });
@@ -234,7 +252,8 @@ export class PlaylistService {
 
         }
 
-
+        playListFromDb.phrases.push(phrase._id);
+        await playListFromDb.save();
 
       }
 
@@ -322,21 +341,25 @@ export class PlaylistService {
 
 
 
-  async findOne(playlistId: string, userId: string) {
+  async findOne(playlistId: string, userId: string, querys: any) {
 
 
     try {
 
 
-     // const words = await this.wordStatModel.find({ user: userId })
-     // .populate('word');
+      const { type, orden } = querys;
 
+
+
+      this.validateElementType(type);
+      this.validateOrden(orden);
 
 
 
 
       const playlist = await this.playListModel.findOne({
         _id: playlistId,
+        type: type,
         $or: [
           { user: userId },
           { editorUsers: userId },
@@ -347,16 +370,46 @@ export class PlaylistService {
         .populate('viewerUsers', 'fullName email id')
         .populate('stories')
         .populate('words')
-   
+        .populate('phrases');
+
+
 
 
       if (!playlist) {
         throw new BadRequestException('Playlist not found');
       }
 
+
+      if (type === 'Word') {
+
+        return {
+          playlist: await this.getWordsPlayListWithStats(playlist, userId, orden)
+        }
+      }
+
+
+      if (type === 'Story') {
+        return {
+          playlist: await this.getStoryPlayListWithStats(playlist, userId, orden)
+        }
+
+      }
+
+      if(type === 'Phrase' ) {
+          
+          return {
+            playlist: playlist
+          }
+      }
+
+
+
       return {
-        //words,
-        playlist};
+        message: 'Not implemented yet'
+      }
+
+
+
 
 
 
@@ -370,6 +423,105 @@ export class PlaylistService {
   update(id: number, updatePlaylistDto: UpdatePlaylistDto) {
     return `This action updates a #${id} playlist`;
   }
+
+
+  async getStoryPlayListWithStats(playlist: any, userId: string, orden: string) {
+
+
+    const promiseStoryWithStats = playlist.stories.map(story => {
+      return this.storyService.findOne(story._id, userId)
+    });
+
+
+    const storiesWithStats = (await Promise.all(promiseStoryWithStats)).map((storyStats => {
+
+      console.log(storyStats);
+
+      return {
+
+        storyId: storyStats.story._id,
+        title: storyStats.story.title,
+        reproductions: storyStats.story.reproductions,
+        paragraph: storyStats.story.paragraph,
+        isFavorite: storyStats.story.isFavorite,
+        listenDate: storyStats.story.listenDate,
+      }
+    }
+    ));
+
+    const newPlayList = playlist.toJSON();
+
+    (newPlayList.stories as any) = storiesWithStats;
+
+    if (orden === 'menos-reproducidas') {
+
+      newPlayList.stories = newPlayList.stories.sort((a: any, b: any) => a.reproductions - b.reproductions);
+
+    }
+
+    if (orden === 'mas-reproducidas') {
+      newPlayList.stories = newPlayList.stories.sort((a: any, b: any) => b.reproductions - a.reproductions);
+
+    }
+
+    if (orden === 'aleatorias') {
+      newPlayList.stories = newPlayList.stories.sort(() => Math.random() - 0.5);
+    }
+
+
+    return newPlayList;
+
+
+  }
+
+
+  async getWordsPlayListWithStats(playlist: any, userId: string, orden: string) {
+
+
+
+    const promiseWordsWithStats = playlist.words.map(word => {
+      return this.wordStatsService.findWordStatByWordId(word._id, userId)
+    });
+
+    const wordsWithStats = (await Promise.all(promiseWordsWithStats)).map((wordStats => {
+
+      return {
+        wordId: wordStats.wordStats.word._id,
+        word: wordStats.wordStats.word.word,
+        reproductions: wordStats.wordStats.reproductions
+      }
+    }))
+
+    const newPlayList = playlist.toJSON();
+
+
+
+
+    (newPlayList.words as any) = wordsWithStats;
+
+
+    if (orden === 'menos-reproducidas') {
+
+      newPlayList.words = newPlayList.words.sort((a: any, b: any) => a.reproductions - b.reproductions);
+
+    }
+
+
+    if (orden === 'mas-reproducidas') {
+      newPlayList.words = newPlayList.words.sort((a: any, b: any) => b.reproductions - a.reproductions);
+
+    }
+
+    if (orden === 'aleatorias') {
+      newPlayList.words = newPlayList.words.sort(() => Math.random() - 0.5);
+    }
+
+
+    return newPlayList;
+
+  }
+
+
 
   async remove(playListId: string, userId: string) {
 
@@ -408,6 +560,18 @@ export class PlaylistService {
       handleError(error);
     }
 
+  }
+
+
+  validateOrden(orden: string) {
+
+    if (!orden) {
+      throw new BadRequestException('orden is required');
+    }
+
+    if (!this.validOrden.includes(orden)) {
+      throw new BadRequestException(`orden not valid(${this.validOrden.join(', ')})`);
+    }
   }
 
 

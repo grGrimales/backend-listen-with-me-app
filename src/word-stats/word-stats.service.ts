@@ -287,6 +287,30 @@ export class WordStatsService {
       }
   }
 
+  async findWordStatByWordId(wordId: string, userId: string) {
+    try {
+
+      // Validar que la palabra exista
+      await this.validateExistWordStat(wordId);
+
+      const wordStats = await this.wordStat.findOne(
+        {
+          user: userId,
+          word: wordId
+        }
+      )
+      .populate('word')
+      .exec();
+
+      return {
+        wordStats
+      };
+
+    } catch (error) {
+      handleError(error);
+    }
+  }
+
 
   create(createWordStatDto: CreateWordStatDto) {
     return 'This action adds a new wordStat';

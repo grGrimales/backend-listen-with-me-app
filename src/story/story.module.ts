@@ -25,6 +25,7 @@ import { WordStatSchema } from '../word-stats/entities/word-stat.entity';
     StoryService,
     CategoryService
   ],
+  exports: [StoryService]
 })
 export class StoryModule {}
 

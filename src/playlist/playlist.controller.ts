@@ -80,7 +80,9 @@ const query = request.query;
 
     const userId = request.user.id;
 
-    return this.playlistService.findOne(id, userId);
+    const query = request.query;
+
+    return this.playlistService.findOne(id, userId, query);
   }
 
   @Patch(':id')

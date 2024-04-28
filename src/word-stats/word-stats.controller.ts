@@ -80,4 +80,23 @@ export class WordStatsController {
     const userId =  request.user.id;
     return this.wordStatsService.addWordToCategory(id, categorys, userId);
   }
+
+
+
+
+  @UseGuards(
+    JwtValidateGuard,
+    ValidateMongoIdGuard
+  )
+  @Get('find-word-stat-by-word-id/:id')
+  findWordStatByWordId(
+    @Param('id') id: string,
+    @Req() request
+
+  ) {
+    const userId = request.user.id;
+
+
+    return this.wordStatsService.findWordStatByWordId(id, userId);
+  }
 }
