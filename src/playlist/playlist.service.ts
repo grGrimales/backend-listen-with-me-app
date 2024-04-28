@@ -121,7 +121,7 @@ if(isOwner !== 'true' && isOwner !== 'false'){
 
   validateElementType(elementType: string) {
     if (elementType !== 'Story' && elementType !== 'Word' && elementType !== 'Phrase') {
-      throw new BadRequestException('Invalid element type should be story, Phrase or Word');
+      throw new BadRequestException('Invalid element type should be Story, Phrase or Word');
     }
   }
 
