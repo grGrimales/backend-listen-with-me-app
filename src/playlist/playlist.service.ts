@@ -66,14 +66,36 @@ export class PlaylistService {
 
   }
 
-  async findAllMyPlaylists(userId: string) {
+  async findAllMyPlaylists(userId: string, querys : any) {
+
+const { type, isOwner = true } = querys;
+
+this.validateElementType(type);
+
+if(isOwner !== 'true' && isOwner !== 'false'){ 
+  throw new BadRequestException('Invalid isOwner value should be true or false');
+
+}
 
 
 
     try {
 
+      const pipeline: any[] = [{$match: { user: userId, type: type }}];
 
-      const playlists = await this.playListModel.find({ user: userId })
+      if(isOwner === 'false') {
+
+        // Filtrar tambien si el usuario es editor o viewer
+        pipeline.push({$match: { $or: [{ editorUsers: userId }, { viewerUsers: userId } ]}});
+        
+
+      }
+
+      const playlists = await this.playListModel.find(
+        { user: userId, type: type }
+        
+        
+        )
         .populate('editorUsers', 'fullName email id')
         .populate('viewerUsers', 'fullName email id')
         .populate('stories')
@@ -94,10 +116,12 @@ export class PlaylistService {
 
   }
 
+  
+
 
   validateElementType(elementType: string) {
-    if (elementType !== 'story' && elementType !== 'word') {
-      throw new BadRequestException('Invalid element type provided to add to playlist should be story or word');
+    if (elementType !== 'Story' && elementType !== 'Word' && elementType !== 'Phrase') {
+      throw new BadRequestException('Invalid element type should be story, Phrase or Word');
     }
   }
 
@@ -131,13 +155,22 @@ export class PlaylistService {
         const story = await this.storyModel.findOne({ _id: elementId });
 
         if (!story) {
-          throw new BadRequestException('Story not found');
+          // throw new BadRequestException('Story not found');
+
+          return {
+            message: `Story with id ${elementId} not found`
+          }
+
         }
 
 
         // Si la historia ya esta en la lista no la agregamos
         if (playListFromDb.stories.map(story => story.toString()).includes(elementId)) {
-          throw new BadRequestException('Story already exists in the playlist');
+          //throw new BadRequestException('Story already exists in the playlist');
+
+          return {
+            message: `Story with id ${elementId} already exists in the playlist`,
+          }
         }
 
         playListFromDb.stories.push(story._id);
@@ -148,16 +181,24 @@ export class PlaylistService {
 
       // Si el tipo de lista es palabra
       if (playListType === 'Word') {
-        const word = await this.storyModel.findOne({ _id: elementId });
+        const word = await this.wordModel.findOne({ _id: elementId });
 
 
         // Si la palabra ya esta en la lista no la agregamos
         if (playListFromDb.words.map(word => word.toString()).includes(elementId)) {
-          throw new BadRequestException('Word already exists in the playlist');
+          //throw new BadRequestException('Word already exists in the playlist');
+
+          return {
+            message: `Word with id ${elementId} already exists in the playlist`,
+          }
         }
 
         if (!word) {
-          throw new BadRequestException('Word not found');
+          // throw new BadRequestException('Word not found');
+
+          return {
+            message: `Word with id ${elementId} not found`
+          }
         }
 
         playListFromDb.words.push(word._id);
@@ -173,12 +214,21 @@ export class PlaylistService {
         const phrase = await this.phraseModel.findOne({ _id: elementId });
 
         if (!phrase) {
-          throw new BadRequestException('Phrase not found');
-        }
+        //  throw new BadRequestException('Phrase not found');
+            
+            return {
+              message: `Phrase with id ${elementId} not found`
+            }
+      
+      }
 
         // Si la frase ya esta en la lista no la agregamos
         if (playListFromDb.phrases.map(phrase => phrase.toString()).includes(elementId)) {
-          throw new BadRequestException('Phrase already exists in the playlist');
+          // throw new BadRequestException('Phrase already exists in the playlist');
+          return {
+            message: `Phrase with id ${elementId} already exists in the playlist`,
+          }
+        
         }
 
 
@@ -194,6 +244,35 @@ export class PlaylistService {
 
   }
 
+
+
+  async addMultipleElementsToPlaylist(addElementToPlaylistDto: AddElementToPlaylistDto[], userId: string) {
+
+
+
+    try {
+
+
+      if (!addElementToPlaylistDto.length) {
+        throw new BadRequestException('No elements provided to add to playlist');
+      }
+
+
+
+      // Creamos un array con las promesas de agregar elementos a la lista
+      const promises = addElementToPlaylistDto.map((element) => {
+        return this.addElementToPlaylist(element, userId)
+      });
+      // Esperamos que todas las promesas se resuelvan
+      const result = await Promise.all(promises);
+
+      return result;
+
+
+    } catch (error) {
+      handleError(error);
+    }
+  }
 
   async removeElementFromPlaylist(addElementToPlaylistDto: AddElementToPlaylistDto, userId: string) {
 
@@ -317,4 +396,6 @@ export class PlaylistService {
     }
 
   }
+
+
 }

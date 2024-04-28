@@ -66,9 +66,9 @@ export class PlaylistController {
   ) {
 
     const userId = request.user.id;
+const query = request.query;
 
-
-    return this.playlistService.findAllMyPlaylists(userId);
+    return this.playlistService.findAllMyPlaylists(userId, query);
   }
 
   @UseGuards(
@@ -98,5 +98,17 @@ export class PlaylistController {
     const userId = request.user.id;
 
     return this.playlistService.remove(id, userId);
+  }
+
+
+
+  @UseGuards(
+    JwtValidateGuard,
+  )
+  @Put('add-multiple-elements-to-playlist')
+  addMultipleElementsToPlaylist(@Body() addElementToPlaylistDto: AddElementToPlaylistDto[], @Req() request){
+    const userId = request.user.id;
+
+    return this.playlistService.addMultipleElementsToPlaylist(addElementToPlaylistDto, userId);
   }
 }

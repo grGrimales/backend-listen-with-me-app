@@ -4,12 +4,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreatePhraseDto } from './dto/create-phrase.dto';
 import { UpdatePhraseDto } from './dto/update-phrase.dto';
-import { handleError } from 'src/helpers/handled-error';
+import { handleError } from '../helpers/handled-error';
 import { InjectModel } from '@nestjs/mongoose';
 import { Story } from '../story/entities/story.entity';
 import { Phrase } from './entities/phrase.entity';
 import { CloudinaryAdapter } from '../plugins/cloudinary.adapter';
-import {  v2 as cloudinary } from 'cloudinary';
+import { v2 as cloudinary } from 'cloudinary';
 import mongoose, { Model } from 'mongoose';
 
 interface IQuerys {
@@ -43,7 +43,7 @@ export class PhraseService {
       api_secret: process.env.CLOUDINARY_API_SECRET,
     })
 
-   }
+  }
 
 
   async create(createPhraseDto: CreatePhraseDto, userId: string) {
@@ -51,12 +51,12 @@ export class PhraseService {
     try {
       const { originStory } = createPhraseDto;
 
-      if(originStory){
+      if (originStory) {
 
         const storyFronDB = await this.storyModel.findOne({ _id: originStory });
 
 
-        if(!storyFronDB){
+        if (!storyFronDB) {
           throw new BadRequestException('Story not found');
         }
 
@@ -73,7 +73,7 @@ export class PhraseService {
         message: 'Phrase created successfully',
         data: phrase
       };
-      
+
     } catch (error) {
       handleError(error);
     }
@@ -87,7 +87,7 @@ export class PhraseService {
       const phrases = await this.phraseModel.find({ originStory: storyId, user: userId });
 
       return phrases;
-      
+
     } catch (error) {
       handleError(error);
     }
@@ -102,7 +102,7 @@ export class PhraseService {
     try {
       const phraseDb = await this.phraseModel.findOne({ _id: phraseId });
 
-      if(!phraseDb){
+      if (!phraseDb) {
         throw new BadRequestException('Phrase not found');
       }
 
@@ -125,7 +125,7 @@ export class PhraseService {
         message: 'Audio added to phrase successfully',
         data: phraseDb
       };
-      
+
     } catch (error) {
       handleError(error);
     }
@@ -163,10 +163,10 @@ export class PhraseService {
         favoritos,
         total = 10,
         isAudioPending,
-         isOwner,
-        page ,
+        isOwner,
+        page,
         limit
-      
+
       } = querys;
 
 
@@ -181,13 +181,15 @@ export class PhraseService {
 
       if (isAudioPending == 'true') {
         console.log('isAudioPending', isAudioPending);
-        pipeline.push({       $match: {
-          $or: [
-            { audio: 'pendiente' },
-            { audio: { $exists: false } }
-            
-          ]
-        } });
+        pipeline.push({
+          $match: {
+            $or: [
+              { audio: 'pendiente' },
+              { audio: { $exists: false } }
+
+            ]
+          }
+        });
       } else if (isAudioPending === 'false') {
         pipeline.push({ $match: { audio: { $ne: 'pendiente' } } });
       }
@@ -199,7 +201,7 @@ export class PhraseService {
       }
 
       if (isOwner == 'true') {
-        pipeline.push({ $match: { user: new mongoose.Types.ObjectId(userId),} });
+        pipeline.push({ $match: { user: new mongoose.Types.ObjectId(userId), } });
       }
 
 
@@ -208,7 +210,7 @@ export class PhraseService {
         throw new BadRequestException(`Params orden is not valid:  (${validOrden.join(', ')})`);
       }
 
-   
+
 
 
       if (orden === 'recientes') {
@@ -238,14 +240,38 @@ export class PhraseService {
     return `This action returns a #${id} phrase`;
   }
 
-  update(id: number, updatePhraseDto: UpdatePhraseDto) {
-    return `This action updates a #${id} phrase`;
+  async update(id: string, updatePhraseDto: UpdatePhraseDto) {
+
+    try {
+
+      const { phrase, translation } = updatePhraseDto;
+
+
+      const phraseUpdated = await this.phraseModel.findByIdAndUpdate(id, {
+        phrase,
+        translation
+      }, { new: true });
+
+      if (!phraseUpdated) {
+        throw new BadRequestException('Phrase not found');
+      }
+
+      return {
+        message: 'Phrase updated successfully',
+        phrase: phraseUpdated
+      };
+
+
+    } catch (error) {
+      handleError(error);
+    }
+
   }
 
   async remove(phraseId: string, userId: string) {
 
     try {
-      
+
 
       const phrase = await this.phraseModel.findOne({ _id: phraseId });
 

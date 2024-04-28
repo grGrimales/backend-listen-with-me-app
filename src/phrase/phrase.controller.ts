@@ -77,11 +77,13 @@ export class PhraseController {
     return this.phraseService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Patch('update-phrase/:id')
   update(@Param('id') id: string, @Body() updatePhraseDto: UpdatePhraseDto) {
-    return this.phraseService.update(+id, updatePhraseDto);
+    return this.phraseService.update(id, updatePhraseDto);
   }
 
+
+  
 
   @UseGuards(
     ValidateMongoIdGuard,

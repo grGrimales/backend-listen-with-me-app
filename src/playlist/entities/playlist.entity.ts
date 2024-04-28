@@ -3,7 +3,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 import { User } from '../../user/entities/user.entity';
 import { Story } from '../../story/entities/story.entity';
 import { Word } from '../../word/entities/word.entity'
-import { Phrase } from 'src/phrase/entities/phrase.entity';
+import { Phrase } from '../../phrase/entities/phrase.entity';
 
 export interface PlayList extends Document {
     title: string;
