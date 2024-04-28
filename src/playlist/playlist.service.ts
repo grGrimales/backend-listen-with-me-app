@@ -69,36 +69,36 @@ export class PlaylistService {
 
   }
 
-  async findAllMyPlaylists(userId: string, querys : any) {
+  async findAllMyPlaylists(userId: string, querys: any) {
 
-const { type, isOwner = true } = querys;
+    const { type, isOwner = true } = querys;
 
-this.validateElementType(type);
+    this.validateElementType(type);
 
-if(isOwner !== 'true' && isOwner !== 'false'){ 
-  throw new BadRequestException('Invalid isOwner value should be true or false');
+    if (isOwner !== 'true' && isOwner !== 'false') {
+      throw new BadRequestException('Invalid isOwner value should be true or false');
 
-}
+    }
 
 
 
     try {
 
-      const pipeline: any[] = [{$match: { user: userId, type: type }}];
+      const pipeline: any[] = [{ $match: { user: userId, type: type } }];
 
-      if(isOwner === 'false') {
+      if (isOwner === 'false') {
 
         // Filtrar tambien si el usuario es editor o viewer
-        pipeline.push({$match: { $or: [{ editorUsers: userId }, { viewerUsers: userId } ]}});
-        
+        pipeline.push({ $match: { $or: [{ editorUsers: userId }, { viewerUsers: userId }] } });
+
 
       }
 
       const playlists = await this.playListModel.find(
         { user: userId, type: type }
-        
-        
-        )
+
+
+      )
         .populate('editorUsers', 'fullName email id')
         .populate('viewerUsers', 'fullName email id')
         .populate('stories')
@@ -119,7 +119,7 @@ if(isOwner !== 'true' && isOwner !== 'false'){
 
   }
 
-  
+
 
 
   validateElementType(elementType: string) {
@@ -217,13 +217,13 @@ if(isOwner !== 'true' && isOwner !== 'false'){
         const phrase = await this.phraseModel.findOne({ _id: elementId });
 
         if (!phrase) {
-        //  throw new BadRequestException('Phrase not found');
-            
-            return {
-              message: `Phrase with id ${elementId} not found`
-            }
-      
-      }
+          //  throw new BadRequestException('Phrase not found');
+
+          return {
+            message: `Phrase with id ${elementId} not found`
+          }
+
+        }
 
         // Si la frase ya esta en la lista no la agregamos
         if (playListFromDb.phrases.map(phrase => phrase.toString()).includes(elementId)) {
@@ -231,7 +231,7 @@ if(isOwner !== 'true' && isOwner !== 'false'){
           return {
             message: `Phrase with id ${elementId} already exists in the playlist`,
           }
-        
+
         }
 
 
@@ -328,6 +328,12 @@ if(isOwner !== 'true' && isOwner !== 'false'){
     try {
 
 
+     // const words = await this.wordStatModel.find({ user: userId })
+     // .populate('word');
+
+
+
+
 
       const playlist = await this.playListModel.findOne({
         _id: playlistId,
@@ -340,14 +346,17 @@ if(isOwner !== 'true' && isOwner !== 'false'){
         .populate('editorUsers', 'fullName email id')
         .populate('viewerUsers', 'fullName email id')
         .populate('stories')
-        .populate('WordStat')
+        .populate('words')
+   
 
 
       if (!playlist) {
         throw new BadRequestException('Playlist not found');
       }
 
-      return playlist;
+      return {
+        //words,
+        playlist};
 
 
 
