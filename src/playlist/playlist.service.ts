@@ -166,11 +166,6 @@ export class PlaylistService {
 
       const playListType = playListFromDb.type;
 
-
-      console.log(playListType);
-      console.log(playListFromDb)
-
-
       // Si el tipo de lista es historia
       if (playListType === 'Story') {
         const story = await this.storyModel.findOne({ _id: elementId });
@@ -485,10 +480,15 @@ export class PlaylistService {
 
     const wordsWithStats = (await Promise.all(promiseWordsWithStats)).map((wordStats => {
 
+      console.log(wordStats);
+
       return {
         wordId: wordStats.wordStats.word._id,
         word: wordStats.wordStats.word.word,
-        reproductions: wordStats.wordStats.reproductions
+        reproductions: wordStats.wordStats.reproductions,
+        audio: wordStats.wordStats.word.audio,
+        translation: wordStats.wordStats.word.translation,
+
       }
     }))
 
