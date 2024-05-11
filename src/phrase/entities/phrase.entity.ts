@@ -5,6 +5,11 @@ import { Story } from '../../story/entities/story.entity';
 import { User } from '../../user/entities/user.entity';
 
 
+export interface Playback {
+    user: string;
+    count: number;
+}
+
 
 export interface Phrase extends Document{
     phrase: string;
@@ -15,9 +20,14 @@ export interface Phrase extends Document{
     categories: string[];
     user: User;
     date: string;
-    originStory: Story
+    originStory: Story;
+    playbacks: Playback[];
 }
 
+const PlaybackSchema: Schema = new Schema({
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    count: { type: Number, required: true, default: 0 },
+});
 
 export const PhraseSchema: Schema = new Schema({
     phrase: { type: String, required: true, unique: true},
@@ -28,7 +38,8 @@ export const PhraseSchema: Schema = new Schema({
     categories: { type: [String], required: false },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     date: { type: String, required: true, default: Date.now()},
-    originStory: { type: Schema.Types.ObjectId, ref: 'Story', required: false }
+    originStory: { type: Schema.Types.ObjectId, ref: 'Story', required: false },
+    playbacks: [PlaybackSchema]
 },
     {
         versionKey: false,

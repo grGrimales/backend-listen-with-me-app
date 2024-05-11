@@ -172,7 +172,7 @@ export class PhraseService {
 
       const pipeline: any[] = [{ $match: {} }];
 
-      const validOrden = ['recientes', 'antiguas', 'aleatorias'];
+      const validOrden = ['recientes', 'antiguas', 'aleatorias', 'menos-reproducidas', 'mas-reproducidas'];
 
 
       if (isAudioPending !== 'true' && isAudioPending !== 'false') {
@@ -180,7 +180,6 @@ export class PhraseService {
       }
 
       if (isAudioPending == 'true') {
-        console.log('isAudioPending', isAudioPending);
         pipeline.push({
           $match: {
             $or: [
@@ -209,9 +208,19 @@ export class PhraseService {
       if (!validOrden.includes(orden)) {
         throw new BadRequestException(`Params orden is not valid:  (${validOrden.join(', ')})`);
       }
-
-
-
+     
+      // Filtrar los playbacks por usuario y si playbacks.user is null colocar de primero  
+      pipeline.push({
+        $addFields: {
+          playbacks: {
+            $cond: {
+              if: { $eq: [{ $type: '$playbacks' }, 'missing'] },
+              then: [],
+              else: '$playbacks'
+            }
+          }
+        }
+      });
 
       if (orden === 'recientes') {
         pipeline.push({ $sort: { date: -1 } });
@@ -219,8 +228,15 @@ export class PhraseService {
         pipeline.push({ $sort: { date: 1 } });
       } else if (orden === 'aleatorias') {
         pipeline.push({ $sample: { size: total } });
-      }
+      } else if (orden === 'menos-reproducidas') {
+        // Solo tomar en cuenta las frases de mi usuario actual
+        pipeline.push({ $sort: { 'playbacks.count': 1 } });
 
+      } else if (orden === 'mas-reproducidas') {
+        // Solo tomar en cuenta las frases de mi usuario actual
+        pipeline.push({ $sort: { 'playbacks.count': -1 } });
+
+      }
 
       const phrases = await this.phraseModel.aggregate(pipeline).exec();
 
@@ -300,4 +316,40 @@ export class PhraseService {
 
 
   }
+
+
+  // Metodo para incrementar el contador de reproducciones por usuario
+  async incrementPlayback(phraseId: string, userId: string) {
+
+    try {
+
+      const phrase = await this.phraseModel.findOne({ _id: phraseId });
+
+      if (!phrase) {
+        throw new BadRequestException('Phrase not found');
+      }
+
+      const userExist = phrase.playbacks.find((playback) => playback.user.toString() === userId);
+
+      if (userExist) {
+        userExist.count += 1;
+      } else {
+        phrase.playbacks.push({ user: userId, count: 1 });
+      }
+
+      await phrase.save();
+
+      return {
+        message: 'Playback incremented successfully',
+        data: phrase
+      };
+
+
+    } catch (error) {
+      handleError(error);
+    }
+
+
+  }
+
 }

@@ -96,4 +96,20 @@ export class PhraseController {
 
     return this.phraseService.remove(id, userId);
   }
+
+
+  // incrementPlayback
+  @UseGuards(
+    ValidateMongoIdGuard,
+    JwtValidateGuard
+  )
+  @Patch('increment-playback/:id')
+  incrementPlayback(@Param('id') id: string, @Req() request){
+
+    const userId = request.user.id;
+
+    return this.phraseService.incrementPlayback(id, userId);
+  }
+
+
 }
