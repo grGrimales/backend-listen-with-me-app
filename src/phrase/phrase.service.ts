@@ -157,18 +157,30 @@ export class PhraseService {
     try {
 
 
+      // Validar que total no venga vacio y sea un numero
+      if (!querys.total || isNaN(querys.total)) {
+        throw new BadRequestException('Params total is required');
+      }
+
+      // Validar que total sea mayor a 0
+      if (querys.total <= 0) {
+        throw new BadRequestException('Params total must be greater than 0');
+      }
+
+      // Castear total a number
+      querys.total = Number(querys.total);
+
       const {
         orden,
         category,
         favoritos,
-        total = 10,
+        total,
         isAudioPending,
         isOwner,
         page,
         limit
 
       } = querys;
-
 
       const pipeline: any[] = [{ $match: {} }];
 
@@ -237,6 +249,10 @@ export class PhraseService {
         pipeline.push({ $sort: { 'playbacks.count': -1 } });
 
       }
+
+
+      // Limitar el numero de frases en base a total
+      pipeline.push({ $limit: total });
 
       const phrases = await this.phraseModel.aggregate(pipeline).exec();
 
