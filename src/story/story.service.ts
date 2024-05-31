@@ -829,8 +829,9 @@ export class StoryService {
 
       }
 
-      stats.isFavorite = true;
+    
 
+      stats.isFavorite = !stats.isFavorite;
       await stats.save();
 
       return {
