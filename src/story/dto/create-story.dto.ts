@@ -49,7 +49,7 @@ class ParagraphDto {
     @IsString({
         message: 'img is required'
     })
-    @MinLength(1)
+    @IsOptional()
     img: string;
 
     @IsString({
@@ -57,6 +57,5 @@ class ParagraphDto {
     })
     @MinLength(1)
     audio: string;
-
 
 }

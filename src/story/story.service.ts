@@ -88,7 +88,12 @@ export class StoryService {
 
         if (element.audio) {
           return this.fileService.uploadPermanentFile(element.audio, createStoryDto.title);
-        }
+         } 
+
+
+
+      
+
       });
 
       const [resultsImg, resultsAudio] = await Promise.all([Promise.all(uploadImgPromises), Promise.all(uploadAudioPromises)]);
@@ -96,12 +101,14 @@ export class StoryService {
       resultsImg.forEach((result, index) => {
         if (result instanceof BadRequestException) {
           //throw new BadRequestException("Error al subir la imagen"); // !TODO: regresar una imagen por defecto
-          createStoryDto.paragraph[index].img = 'https://res.cloudinary.com/dcxto1nnl/video/upload/v1627698089/samples/elephants.mp4'
+          createStoryDto.paragraph[index].img = 'https://res.cloudinary.com/dcxto1nnl/image/upload/v1719406087/no-image_qvnxid.jpg'
           return;
         }
 
         if (createStoryDto.paragraph[index].img) {
           createStoryDto.paragraph[index].img = result.secure_url;
+        } else {
+          createStoryDto.paragraph[index].img = 'https://res.cloudinary.com/dcxto1nnl/image/upload/v1719406087/no-image_qvnxid.jpg'
         }
       }
       );
