@@ -82,26 +82,36 @@ export class PhraseService {
   async createMany(createPhraseDto: CreatePhraseDto[], userId: string) {
 
     try {
+       // validar que todas las frases tengan una frase y no esten vacias
+      const emptyPhrase = createPhraseDto.find((phrase) => !phrase.phrase);
+      if (emptyPhrase) {
 
-      // createPhraseDto.map(async (phrase) => {
-      //   await this.create(phrase, userId);
-      // });
-      //
+        return {
+          message: 'Phrase is required',
+          data: emptyPhrase
+        }
+
+      }
+
+      // Validar que algunas de las frases no existe en la base de datos
+      const phrasesExist = await this.phraseModel.find({ phrase: { $in: createPhraseDto.map((phrase) => phrase.phrase) } });
+      if (phrasesExist.length) {
+        return {
+          message: 'Some phrases already exist',
+          data: phrasesExist
+        }
+      }
+
 
       const createPhrasePromises = createPhraseDto.map(async (phrase) => {
         await this.create(phrase, userId);
       });
 
-      const result =  await Promise.all(createPhrasePromises);
+ await Promise.all(createPhrasePromises);
 
-      const resultError = result.find((t: any) => t instanceof Error);
-
-      const resultSuccess = result.find((t: any) => t instanceof Object);
 
       return {
         message: 'Phrases created successfully',
-        resultError,
-        resultSuccess
       };
 
     } catch (error) {
