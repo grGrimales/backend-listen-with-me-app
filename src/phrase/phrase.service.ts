@@ -79,6 +79,36 @@ export class PhraseService {
     }
 
   }
+  async createMany(createPhraseDto: CreatePhraseDto[], userId: string) {
+
+    try {
+
+      // createPhraseDto.map(async (phrase) => {
+      //   await this.create(phrase, userId);
+      // });
+      //
+
+      const createPhrasePromises = createPhraseDto.map(async (phrase) => {
+        await this.create(phrase, userId);
+      });
+
+      const result =  await Promise.all(createPhrasePromises);
+
+      const resultError = result.find((t: any) => t instanceof Error);
+
+      const resultSuccess = result.find((t: any) => t instanceof Object);
+
+      return {
+        message: 'Phrases created successfully',
+        resultError,
+        resultSuccess
+      };
+
+    } catch (error) {
+      handleError(error);
+    }
+
+  }
 
 
   async findMyPhrasesByStory(storyId: string, userId: string) {
@@ -220,8 +250,8 @@ export class PhraseService {
       if (!validOrden.includes(orden)) {
         throw new BadRequestException(`Params orden is not valid:  (${validOrden.join(', ')})`);
       }
-     
-      // Filtrar los playbacks por usuario y si playbacks.user is null colocar de primero  
+
+      // Filtrar los playbacks por usuario y si playbacks.user is null colocar de primero
       pipeline.push({
         $addFields: {
           playbacks: {

@@ -27,6 +27,18 @@ export class PhraseController {
     return this.phraseService.create(createPhraseDto, userId);
   }
 
+  @UseGuards(
+    JwtValidateGuard,
+  )
+  @Post('create-many')
+  createMany(@Body() createPhraseDto: CreatePhraseDto[], @Req() request) {
+    
+    const userId = request.user.id;
+    return this.phraseService.createMany(createPhraseDto, userId);
+
+
+  }
+
 
 
 
