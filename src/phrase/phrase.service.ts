@@ -149,7 +149,10 @@ export class PhraseService {
       const month = new Date().getMonth();
       const oldAudioPath = phraseDb.audio;
 
-      const pathToSave = `phrases/${month}/${phraseDb.phrase}`;
+      // Limpiar phrase de signos de puntuacion, espacios y caracteres especiales
+      const cleanPhrase = phraseDb.phrase.replace(/[^a-zA-Z0-9]/g, '');
+
+      const pathToSave = `phrases/${month}/${cleanPhrase}`;
 
       const temporalObject = await this.cloudinaryAdapter.uploadFile(file, cloudinary, ['mp3'], pathToSave);
 
