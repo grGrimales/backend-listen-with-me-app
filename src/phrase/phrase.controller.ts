@@ -34,10 +34,13 @@ export class PhraseController {
   createMany(@Body() createPhraseDto: CreatePhraseDto[], @Req() request) {
     
     const userId = request.user.id;
-    return this.phraseService.createMany(createPhraseDto, userId);
+    const playListTitle = request.query.playListTitle;
+    return this.phraseService.createMany(createPhraseDto, userId,playListTitle);
 
 
   }
+
+  
 
 
 
@@ -55,6 +58,8 @@ export class PhraseController {
     const userId = request.user.id;
     return this.phraseService.findMyPhrases(request.query,userId);
   }
+
+
 
 
 
@@ -82,12 +87,6 @@ export class PhraseController {
   }
 
 
-
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.phraseService.findOne(+id);
-  }
 
   @Patch('update-phrase/:id')
   update(@Param('id') id: string, @Body() updatePhraseDto: UpdatePhraseDto) {
@@ -122,6 +121,23 @@ export class PhraseController {
 
     return this.phraseService.incrementPlayback(id, userId);
   }
+
+
+
+  @UseGuards(
+    JwtValidateGuard,
+  )
+  @Get('find-phrases-by-playlist')
+  findPhrasesByPlayList(
+    @Req() request
+
+  ) {
+
+    const userId = request.user.id;
+    const playListId = request.query.playListId;
+    return this.phraseService.findByPlayList(playListId,userId);
+  }
+
 
 
 }

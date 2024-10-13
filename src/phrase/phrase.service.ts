@@ -8,6 +8,7 @@ import { handleError } from '../helpers/handled-error';
 import { InjectModel } from '@nestjs/mongoose';
 import { Story } from '../story/entities/story.entity';
 import { Phrase } from './entities/phrase.entity';
+import { PlayList } from '../playlist/entities/playlist.entity';
 import { CloudinaryAdapter } from '../plugins/cloudinary.adapter';
 import { v2 as cloudinary } from 'cloudinary';
 import mongoose, { Model } from 'mongoose';
@@ -21,7 +22,9 @@ interface IQuerys {
   isAudioPending?: string,
   isOwner?: string,
   page?: number,
-  limit?: number
+  limit?: number,
+  playListId?: string
+
 
 }
 
@@ -33,6 +36,7 @@ export class PhraseService {
   constructor(
     @InjectModel('Story') private readonly storyModel: Model<Story>,
     @InjectModel('Phrase') private readonly phraseModel: Model<Phrase>,
+    @InjectModel('PlayList') private readonly playlistModel: Model<PlayList>,
     private readonly cloudinaryAdapter: CloudinaryAdapter,
 
   ) {
@@ -46,7 +50,7 @@ export class PhraseService {
   }
 
 
-  async create(createPhraseDto: CreatePhraseDto, userId: string) {
+  async create(createPhraseDto: CreatePhraseDto, userId: string, playListId?: string) {
 
     try {
       const { originStory } = createPhraseDto;
@@ -69,6 +73,21 @@ export class PhraseService {
 
       await phrase.save();
 
+      // Si el playListId existe debemos agregar la frase al play list
+      if (playListId) {
+        const playList = await this.playlistModel.findOne({ _id: playListId });
+
+        if (!playList) {
+          throw new BadRequestException('Playlist not found');
+        }
+
+        playList.phrases.push(phrase._id);
+
+        await playList.save();
+
+      }
+
+
       return {
         message: 'Phrase created successfully',
         data: phrase
@@ -79,10 +98,37 @@ export class PhraseService {
     }
 
   }
-  async createMany(createPhraseDto: CreatePhraseDto[], userId: string) {
+  async createMany(createPhraseDto: CreatePhraseDto[], userId: string, playListTitle: string) {
 
     try {
-       // validar que todas las frases tengan una frase y no esten vacias
+
+      console.log('playListTitle', playListTitle);
+
+      //   Validar que epl play list exista
+      if (!playListTitle) {
+        throw new BadRequestException('playListTitle is required');
+      }
+
+      // Validar que el play list exista en la base de datos y tenga permisos el usuario
+      const playListExist = await this.playlistModel.findOne({ title: playListTitle });
+
+      if (!playListExist) {
+        throw new BadRequestException('Playlist not found');
+      }
+
+
+
+      // Validar que el usuario tenga acceso a editar el play list
+      const userHasAccess = playListExist.editorUsers.find((user) => user.toString() === userId);
+
+      if (!userHasAccess) {
+        throw new BadRequestException('You do not have permission to edit this playlist');
+      }
+
+
+
+
+      // validar que todas las frases tengan una frase y no esten vacias
       const emptyPhrase = createPhraseDto.find((phrase) => !phrase.phrase);
       if (emptyPhrase) {
 
@@ -104,10 +150,10 @@ export class PhraseService {
 
 
       const createPhrasePromises = createPhraseDto.map(async (phrase) => {
-        await this.create(phrase, userId);
+        await this.create(phrase, userId, String(playListExist._id));
       });
 
- await Promise.all(createPhrasePromises);
+      await Promise.all(createPhrasePromises);
 
 
       return {
@@ -117,7 +163,6 @@ export class PhraseService {
     } catch (error) {
       handleError(error);
     }
-
   }
 
 
@@ -158,7 +203,6 @@ export class PhraseService {
 
       phraseDb.audio = temporalObject.secure_url;
       await phraseDb.save();
-
 
       if (oldAudioPath !== 'pendiente') {
         await this.cloudinaryAdapter.deleteFile(oldAudioPath, cloudinary, pathToSave);
@@ -221,13 +265,17 @@ export class PhraseService {
         isAudioPending,
         isOwner,
         page,
-        limit
+        limit,
+        playListId
+
 
       } = querys;
 
       const pipeline: any[] = [{ $match: {} }];
 
       const validOrden = ['recientes', 'antiguas', 'aleatorias', 'menos-reproducidas', 'mas-reproducidas'];
+
+
 
 
       if (isAudioPending !== 'true' && isAudioPending !== 'false') {
@@ -248,7 +296,7 @@ export class PhraseService {
         pipeline.push({ $match: { audio: { $ne: 'pendiente' } } });
       }
 
-
+/*
 
       if (isOwner !== 'true' && isOwner !== 'false') {
         throw new BadRequestException(`Params isOwner is not valid:  (true, false)`);
@@ -257,6 +305,7 @@ export class PhraseService {
       if (isOwner == 'true') {
         pipeline.push({ $match: { user: new mongoose.Types.ObjectId(userId), } });
       }
+        */
 
 
 
@@ -277,6 +326,7 @@ export class PhraseService {
         }
       });
 
+
       if (orden === 'recientes') {
         pipeline.push({ $sort: { date: -1 } });
       } else if (orden === 'antiguas') {
@@ -295,14 +345,39 @@ export class PhraseService {
 
 
       // Limitar el numero de frases en base a total
-      pipeline.push({ $limit: total });
+      //  pipeline.push({ $limit: total });
+
 
       const phrases = await this.phraseModel.aggregate(pipeline).exec();
 
-      return {
-        count: phrases.length,
-        data: phrases
-      };
+      console.log(playListId)
+      if (playListId && playListId !== 'null') {
+        console.log("entra...")
+        
+        const playList = await this.findByPlayList(playListId, userId);
+
+        console.log(playList)
+        console.log(phrases)
+
+ 
+// filtrar las frases que esten en el playList y devolver solo el total
+
+        const phrasesFiltered = phrases.filter((phrase) => playList.phrases.includes(phrase._id)).slice(0, total);
+
+
+        return {
+          count: phrasesFiltered.length,
+          data: phrasesFiltered,
+          
+        };
+      } else {
+        return {
+          count: phrases.length,
+          data: phrases
+        };
+      }
+
+  
 
     } catch (error) {
       handleError(error);
@@ -310,10 +385,6 @@ export class PhraseService {
   }
 
 
-
-  findOne(id: number) {
-    return `This action returns a #${id} phrase`;
-  }
 
   async update(id: string, updatePhraseDto: UpdatePhraseDto) {
 
@@ -409,6 +480,78 @@ export class PhraseService {
     }
 
 
+  }
+
+
+  /* Metodo para buscar frases por play list */
+
+  async findByPlayList(playListId: string, userId: string) {
+
+
+    try {
+
+       // validar que el playListId sea un id valido de mongo
+       if (!mongoose.Types.ObjectId.isValid(playListId)) {
+        throw new BadRequestException('playListId is not valid');
+      }
+
+
+      // Validar que el play list exista
+      const playList = await this.playlistModel.findOne({ _id: playListId });
+
+      if (!playList) {
+        throw new BadRequestException('Playlist not found');
+      }
+
+      // Validar que el usuario tenga acceso a visualizar el play list
+
+      const userHasAccess = playList.viewerUsers.find((user) => user.toString() === userId);
+
+      if (!userHasAccess) {
+        throw new BadRequestException('You do not have permission to view this playlist');
+      }
+
+      return {
+        phrases: playList.phrases
+      };
+
+
+
+
+    } catch (error) {
+      handleError(error);
+    }
+
+
+  }
+
+  async getValidPlayListId(playListId: string, userId: string) {
+    try {
+      // validar que el playListId sea un id valido de mongo
+      if (!mongoose.Types.ObjectId.isValid(playListId)) {
+        throw new BadRequestException('playListId is not valid');
+      }
+
+
+      // Validar que el play list exista
+      const playList = await this.playlistModel.findOne({ _id: playListId });
+
+      if (!playList) {
+        throw new BadRequestException('Playlist not found');
+      }
+
+      // Validar que el usuario tenga acceso a visualizar el play list
+
+      const userHasAccess = playList.viewerUsers.find((user) => user.toString() === userId);
+
+      if (!userHasAccess) {
+        throw new BadRequestException('You do not have permission to view this playlist');
+      }
+
+      return playList;
+    } catch (error) {
+
+    }
   }
 
 }

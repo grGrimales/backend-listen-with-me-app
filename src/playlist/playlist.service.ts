@@ -100,16 +100,10 @@ export class PlaylistService {
 
       const pipeline: any[] = [{ $match: { user: userId, type: type } }];
 
-      if (isOwner === 'false') {
-
-        // Filtrar tambien si el usuario es editor o viewer
-        pipeline.push({ $match: { $or: [{ editorUsers: userId }, { viewerUsers: userId }] } });
-
-
-      }
+      pipeline.push({ $match: { $or: [{ editorUsers: userId }, { viewerUsers: userId }] } });
 
       const playlists = await this.playListModel.find(
-        { user: userId, type: type }
+        {  type: type }
 
 
       )

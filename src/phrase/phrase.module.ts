@@ -14,6 +14,7 @@ import { StorySchema } from './../story/entities/story.entity';
 import { UserSchema } from '../user/entities/user.entity';
 import { WordSchema } from '../word/entities/word.entity';
 import { PhraseSchema } from './entities/phrase.entity';
+import { PlayListSchema } from 'src/playlist/entities/playlist.entity';
 
 
 @Module({
@@ -25,6 +26,8 @@ import { PhraseSchema } from './entities/phrase.entity';
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema}]),
     MongooseModule.forFeature([{ name: 'Word', schema: WordSchema}]),
     MongooseModule.forFeature([{ name: 'Phrase', schema: PhraseSchema}]),
+
+    MongooseModule.forFeature([{ name: 'PlayList', schema: PlayListSchema}]),
 
 
   
